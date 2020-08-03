@@ -3,7 +3,7 @@ import json
 import argparse
 
 kelvinConstant = 273.15
-APIKey = "a24139ce6321ad86e6b5a7bbe45287b7"
+
 
 def convertKelvinToCelcius(temperatureInKelvin):
     return temperatureInKelvin - kelvinConstant
@@ -46,7 +46,7 @@ def displayWeatherReport(weatherDictionary):
     + str(roundFloatUp(wd["feels_like"])) + "C | Humidity: " + str(wd["humidity"]) + "% | " +
     wd["locationName"] + ", " + wd["locationCountry"])
 
-def queryWeatherAPIFor(thisLocation):
+def queryWeatherAPIFor(thisLocation, APIKey):
     parameters = {"q": thisLocation, "appid": APIKey}
     response = requests.get("https://api.openweathermap.org/data/2.5/weather", params=parameters)
     if(response.status_code!=200):
@@ -71,6 +71,7 @@ def argumentParserBuilder():
 if __name__ == "__main__":
     parser = argumentParserBuilder()
     args = parser.parse_args()
-    weatherQueryResults = queryWeatherAPIFor(args.location)
+    configuration = json.load(open("config.json"))
+    weatherQueryResults = queryWeatherAPIFor(args.location, configuration["APIKey"])
     quitIfNotResponse200(weatherQueryResults)
     displayWeatherReport(convertQueryResultToDict(weatherQueryResults))
