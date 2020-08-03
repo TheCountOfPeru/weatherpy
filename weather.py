@@ -73,5 +73,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     weatherQueryResults = queryWeatherAPIFor(args.location)
     quitIfNotResponse200(weatherQueryResults)
-    weatherDictionary = convertQueryResultToDict(weatherQueryResults)
-    displayWeatherReport(weatherDictionary)
+    displayWeatherReport(convertQueryResultToDict(weatherQueryResults))
