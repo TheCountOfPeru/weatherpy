@@ -5,30 +5,8 @@ import argparse
 kelvinConstant = 273.15
 APIKey = "a24139ce6321ad86e6b5a7bbe45287b7"
 
-def argumentParserBuilder():
-    parser = argparse.ArgumentParser(
-        description='weatherpy - basic weather information'
-    )
-    parser.add_argument(
-        'location',
-        help='Display weather information for this location',
-    )
-    return parser
-
 def convertKelvinToCelcius(temperatureInKelvin):
     return temperatureInKelvin - kelvinConstant
-
-def queryWeatherAPIFor(thisLocation):
-    parameters = {"q": thisLocation, "appid": APIKey}
-    # Make a get request to get the latest position of the international space station from the opennotify api.
-    response = requests.get("https://api.openweathermap.org/data/2.5/weather", params=parameters)
-    # Print the status code of the response.
-    print(response.status_code)
-    # print(response.content)
-    # weatherData = response.json()
-    # print(type(data))
-    # print(convertKelvinToCelcius(weatherData["main"]["temp"]))
-    return response.json()
     
 def getWeatherDescription(weatherQueryResults): 
     return weatherQueryResults["weather"][0]["description"]
@@ -48,8 +26,7 @@ def getLocationName(weatherQueryResults):
 def getLocationCountry(weatherQueryResults):         
     return weatherQueryResults["sys"]["country"]
 
-def convertQueryResultToDict(weatherQueryResults):
-  
+def convertQueryResultToDict(weatherQueryResults): 
     weatherInfomationDict = {
         "description": getWeatherDescription(weatherQueryResults),
         "temperature":getTemperature(weatherQueryResults),
@@ -60,13 +37,41 @@ def convertQueryResultToDict(weatherQueryResults):
     }
     return weatherInfomationDict
 
+def roundFloatUp(aFloat):
+    return ('{:.0f}'.format(aFloat))
+
 def displayWeatherReport(weatherDictionary):
     wd = weatherDictionary
-    print(wd["description"] + ", " + str(wd["temperature"]) + )
+    print(wd["description"] + ", " + str(roundFloatUp(wd["temperature"])) + "C, / feels like " 
+    + str(roundFloatUp(wd["feels_like"])) + "C | Humidity: " + str(wd["humidity"]) + "% | " +
+    wd["locationName"] + ", " + wd["locationCountry"])
+
+def queryWeatherAPIFor(thisLocation):
+    parameters = {"q": thisLocation, "appid": APIKey}
+    response = requests.get("https://api.openweathermap.org/data/2.5/weather", params=parameters)
+    if(response.status_code!=200):
+        return response.status_code
+    return response.json()
+
+def quitIfNotResponse200(weatherQueryResults):
+    if(isinstance(weatherQueryResults,int)):
+        print("HTTP error: "+ str(weatherQueryResults))
+        exit()
+
+def argumentParserBuilder():
+    parser = argparse.ArgumentParser(
+        description='weatherpy - basic weather information'
+    )
+    parser.add_argument(
+        'location',
+        help='Input location for query. Use "city name" or "city name,country code"',
+    )
+    return parser
 
 if __name__ == "__main__":
     parser = argumentParserBuilder()
     args = parser.parse_args()
     weatherQueryResults = queryWeatherAPIFor(args.location)
+    quitIfNotResponse200(weatherQueryResults)
     weatherDictionary = convertQueryResultToDict(weatherQueryResults)
     displayWeatherReport(weatherDictionary)
