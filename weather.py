@@ -4,7 +4,6 @@ import argparse
 
 kelvinConstant = 273.15
 
-
 def convertKelvinToCelcius(temperatureInKelvin):
     return temperatureInKelvin - kelvinConstant
     
